@@ -4,7 +4,7 @@ simplemente apoyada bajo un tren de cargas: momento maximo (metodo del eje
 equidistante / teorema de Barre), reacciones en los apoyos y cortante.
 
 Ejecutar con:
-    streamlit run streamlit_app.py
+    streamlit run app_lineas_influencia.py
 """
 
 import pandas as pd

@@ -21,7 +21,7 @@ Sistema de unidades: MKS práctico (longitudes en metros, cargas en toneladas, m
 git clone https://github.com/RACALLEO/Influence_Lines_Bridges.git
 cd Influence_Lines_Bridges
 pip install -r requirements.txt
-streamlit run streamlit_app.py
+streamlit run app_lineas_influencia.py
 ```
 
 Esto abre la aplicación en el navegador en `http://localhost:8501`.
@@ -30,7 +30,7 @@ Esto abre la aplicación en el navegador en `http://localhost:8501`.
 
 | Archivo | Contenido |
 |---|---|
-| `streamlit_app.py` | Interfaz gráfica (pestañas: Tren de carga, Momento, Reacciones, Cortante) |
+| `app_lineas_influencia.py` | Interfaz gráfica (pestañas: Tren de carga, Momento, Reacciones, Cortante) |
 | `influence_lines.py` | Lógica de cálculo (líneas de influencia, tren de carga, posicionamiento, dibujos) y una versión de línea de comandos (`python influence_lines.py`) |
 | `requirements.txt` | Dependencias de Python |
 
