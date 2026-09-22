@@ -1,30 +1,30 @@
 """
-Viga simplemente apoyada (A: apoyo fijo izquierdo, B: apoyo movil derecho)
-bajo un tren de cargas puntuales (cargas con distancia fija entre si, que se
+Viga simplemente apoyada (A: apoyo fijo izquierdo, B: apoyo móvil derecho)
+bajo un tren de cargas puntuales (cargas con distancia fija entre sí, que se
 desplazan juntas sobre la viga).
 
-Sistema de unidades: MKS practico para estructuras -> longitudes en metros (m),
+Sistema de unidades: MKS práctico para estructuras -> longitudes en metros (m),
 cargas en toneladas (ton). Los momentos resultan en ton*m.
 
 Flujo:
 1. Longitud de la viga L.
 2. Definir el tren de carga: distancias entre cargas consecutivas e
    intensidad de cada carga.
-3. Calcular la resultante R del tren y la posicion de su centroide xe
-   (medida desde el origen del tren, la carga mas a la izquierda).
-4. Calcular los dos ejes equidistantes (metodo de Barre): c1 (entre la
-   resultante y la carga mas cercana a su izquierda) y c2 (entre la
-   resultante y la carga mas cercana a su derecha).
+3. Calcular la resultante R del tren y la posición de su centroide xe
+   (medida desde el origen del tren, la carga más a la izquierda).
+4. Calcular los dos ejes equidistantes (método de Barré): c1 (entre la
+   resultante y la carga más cercana a su izquierda) y c2 (entre la
+   resultante y la carga más cercana a su derecha).
 5. Ubicar el tren sobre la viga haciendo coincidir el eje equidistante (c1 o
    c2) con la mitad de la luz L/2; las cargas que caen fuera de la viga se
-   descartan. Con la posicion resultante se calcula el momento en una seccion
-   a una distancia "a" desde el apoyo A, usando la linea de influencia de M:
+   descartan. Con la posición resultante se calcula el momento en una sección
+   a una distancia "a" desde el apoyo A, usando la línea de influencia de M:
         M(x) = x (L - a) / L   si x <= a
         M(x) = a (L - x) / L   si x >= a
    y M_total = suma( Pi * M(xi) ).
-6. Reacciones en A y B: el usuario define la posicion del extremo derecho
+6. Reacciones en A y B: el usuario define la posición del extremo derecho
    del tren sobre la viga (posicionamiento independiente de c1/c2). Con esa
-   posicion se calculan las reacciones usando las lineas de influencia:
+   posición se calculan las reacciones usando las líneas de influencia:
         RA(x) = (L - x) / L
         RB(x) = x / L
    y RA_total = suma( Pi * RA(xi) ), RB_total = suma( Pi * RB(xi) ).
@@ -35,25 +35,25 @@ from matplotlib.patches import Circle, Polygon
 
 
 # ---------------------------------------------------------------------------
-# Lineas de influencia
+# Líneas de influencia
 # ---------------------------------------------------------------------------
 
 def il_ra(x, L):
-    """Influencia de la reaccion en A: RA(x) = (L - x) / L"""
+    """Influencia de la reacción en A: RA(x) = (L - x) / L"""
     return (L - x) / L
 
 
 def il_rb(x, L):
-    """Influencia de la reaccion en B: RB(x) = x / L"""
+    """Influencia de la reacción en B: RB(x) = x / L"""
     return x / L
 
 
 def il_v(x, a, L):
-    """Influencia del cortante en la seccion x = a.
+    """Influencia del cortante en la sección x = a.
 
     x < a  -> V(x) = -x / L
     x > a  -> V(x) = (L - x) / L
-    x == a -> discontinuidad (salto de magnitud 1); se devuelven ambos limites.
+    x == a -> discontinuidad (salto de magnitud 1); se devuelven ambos límites.
     """
     if x < a:
         return -x / L
@@ -66,7 +66,7 @@ def il_v(x, a, L):
 
 
 def il_m(x, a, L):
-    """Influencia del momento en la seccion x = a.
+    """Influencia del momento en la sección x = a.
 
     x <= a -> M(x) = x (L - a) / L
     x >= a -> M(x) = a (L - x) / L
@@ -87,7 +87,7 @@ def build_load_train(magnitudes, distances):
     distancias [m] entre cargas consecutivas (n-1 distancias para n cargas).
 
     Devuelve una lista [(si, Pi), ...] con si medido desde el origen del
-    tren (la carga mas a la izquierda, s1 = 0), en el mismo orden en que se
+    tren (la carga más a la izquierda, s1 = 0), en el mismo orden en que se
     ingresaron las cargas (de izquierda a derecha)."""
     n = len(magnitudes)
     if len(distances) != n - 1:
@@ -109,8 +109,8 @@ def resultant_and_centroid(train):
 
 
 def equidistant_axes(train, x_e):
-    """c1: eje a la mitad de la distancia entre la resultante y la carga mas
-    cercana a su IZQUIERDA. c2: idem con la carga mas cercana a su DERECHA.
+    """c1: eje a la mitad de la distancia entre la resultante y la carga más
+    cercana a su IZQUIERDA. c2: ídem con la carga más cercana a su DERECHA.
     Ambos medidos desde el origen del tren."""
     s_values = sorted(s for s, _ in train)
     s_left = max((s for s in s_values if s <= x_e), default=s_values[0])
@@ -138,7 +138,7 @@ def position_train_on_beam(train, c, L):
     c (medido desde el origen del tren) coincida con L/2. Devuelve:
       - incluidas: [(x_beam, P), ...] cargas dentro de [0, L]
       - excluidas: [(x_beam, P), ...] cargas que caen fuera de la viga
-      - origen_beam: posicion en la viga del origen del tren (x=0 del tren)
+      - origen_beam: posición en la viga del origen del tren (x=0 del tren)
     """
     origen_beam = L / 2 - c
     incluidas, excluidas = _place_train(train, origen_beam, L)
@@ -146,8 +146,8 @@ def position_train_on_beam(train, c, L):
 
 
 def position_train_by_right_end(train, x_derecho, L):
-    """Ubica el tren de carga sobre la viga de modo que la carga mas a la
-    derecha del tren quede en x = x_derecho (posicion definida por el
+    """Ubica el tren de carga sobre la viga de modo que la carga más a la
+    derecha del tren quede en x = x_derecho (posición definida por el
     usuario, medida desde A). Devuelve (incluidas, excluidas, origen_beam)
     con el mismo formato que position_train_on_beam."""
     s_last = max(s for s, _ in train)
@@ -157,7 +157,7 @@ def position_train_by_right_end(train, x_derecho, L):
 
 
 # ---------------------------------------------------------------------------
-# Calculo de momento, cortante y reacciones
+# Cálculo de momento, cortante y reacciones
 # ---------------------------------------------------------------------------
 
 def compute_moment(L, a, loads):
@@ -202,20 +202,20 @@ def compute_reactions(L, loads):
 
 
 # ---------------------------------------------------------------------------
-# Busqueda de la posicion critica (posicion del extremo derecho del tren que
-# maximiza la reaccion en A, en B, o el cortante en una seccion).
+# Búsqueda de la posición crítica (posición del extremo derecho del tren que
+# maximiza la reacción en A, en B, o el cortante en una sección).
 #
 # RA, RB y V (para cargas incluidas) son funciones LINEALES A TRAMOS de la
-# posicion del tren: cada carga aporta una pendiente constante mientras esta
+# posición del tren: cada carga aporta una pendiente constante mientras está
 # sobre la viga, y el valor total solo tiene quiebres/saltos exactamente
-# donde una carga entra o sale de la viga, o (para V) cruza la seccion de
-# analisis. Por lo tanto el maximo siempre ocurre en uno de esos puntos
+# donde una carga entra o sale de la viga, o (para V) cruza la sección de
+# análisis. Por lo tanto el máximo siempre ocurre en uno de esos puntos
 # exactos, sin necesidad de recorrer todo el rango con una malla fina.
 # ---------------------------------------------------------------------------
 
 def _candidate_positions(train, L, extra=None):
     """Genera las posiciones candidatas del extremo derecho del tren donde
-    puede estar el maximo: los limites del dominio [0, L] y los puntos
+    puede estar el máximo: los límites del dominio [0, L] y los puntos
     exactos donde alguna carga entra o sale de la viga."""
     s_values = [s for s, _ in train]
     s_last = max(s_values)
@@ -230,8 +230,8 @@ def _candidate_positions(train, L, extra=None):
 
 
 def find_max_reaction(train, L, kind):
-    """Encuentra la posicion del extremo derecho del tren de carga
-    (0 <= x <= L) que maximiza la reaccion 'RA' o 'RB'.
+    """Encuentra la posición del extremo derecho del tren de carga
+    (0 <= x <= L) que maximiza la reacción 'RA' o 'RB'.
 
     Devuelve (x_optimo, valor_maximo, cargas_incluidas_en_esa_posicion)."""
     best_x = best_val = best_loads = None
@@ -247,8 +247,8 @@ def find_max_reaction(train, L, kind):
 
 
 def find_max_shear(train, L, a):
-    """Encuentra la posicion del extremo derecho del tren de carga
-    (0 <= x <= L) que maximiza el cortante en la seccion x = a.
+    """Encuentra la posición del extremo derecho del tren de carga
+    (0 <= x <= L) que maximiza el cortante en la sección x = a.
 
     Devuelve (x_optimo, valor_maximo, cargas_incluidas_en_esa_posicion)."""
     s_values = [s for s, _ in train]
@@ -267,11 +267,11 @@ def find_max_shear(train, L, a):
 
 
 # ---------------------------------------------------------------------------
-# Graficos
+# Gráficos
 # ---------------------------------------------------------------------------
 
 def plot_influence_line_m(L, a, loads, result):
-    """Linea de influencia de M en x=a, con las ordenadas de cada carga
+    """Línea de influencia de M en x=a, con las ordenadas de cada carga
     marcadas."""
     n_pts = 400
     xs = [L * i / n_pts for i in range(n_pts + 1)]
@@ -281,8 +281,8 @@ def plot_influence_line_m(L, a, loads, result):
     ax.plot(xs, ys, color="seagreen")
     ax.axhline(0, color="black", linewidth=0.8)
     ax.axvline(a, color="gray", linestyle="--", linewidth=0.8)
-    ax.set_title(f"Linea de influencia de $M$ en la seccion x=a={a:.3g} m")
-    ax.set_xlabel("x (posicion de la carga unitaria desde A) [m]")
+    ax.set_title(f"Línea de influencia de $M$ en la sección x=a={a:.3g} m")
+    ax.set_xlabel("x (posición de la carga unitaria desde A) [m]")
     ax.set_ylabel("$M(x)$ [m]")
     ax.grid(True, linestyle="--", alpha=0.5)
     for r in result["rows"]:
@@ -295,7 +295,7 @@ def plot_influence_line_m(L, a, loads, result):
 
 
 def plot_influence_line_v(L, a, loads, result):
-    """Linea de influencia de V en x=a, con el salto en la seccion y las
+    """Línea de influencia de V en x=a, con el salto en la sección y las
     ordenadas de cada carga marcadas."""
     n_pts = 400
     xs = [L * i / n_pts for i in range(n_pts + 1)]
@@ -312,8 +312,8 @@ def plot_influence_line_v(L, a, loads, result):
     ax.plot([a, a], [-a / L, (L - a) / L], color="darkorange", linestyle=":")
     ax.axhline(0, color="black", linewidth=0.8)
     ax.axvline(a, color="gray", linestyle="--", linewidth=0.8)
-    ax.set_title(f"Linea de influencia de $V$ en la seccion x=a={a:.3g} m")
-    ax.set_xlabel("x (posicion de la carga unitaria desde A) [m]")
+    ax.set_title(f"Línea de influencia de $V$ en la sección x=a={a:.3g} m")
+    ax.set_xlabel("x (posición de la carga unitaria desde A) [m]")
     ax.set_ylabel("$V(x)$")
     ax.grid(True, linestyle="--", alpha=0.5)
     for r in result["rows"]:
@@ -327,8 +327,8 @@ def plot_influence_line_v(L, a, loads, result):
 
 
 def plot_influence_lines_reactions(L, loads, result):
-    """Lineas de influencia de RA y RB, con las ordenadas de cada carga
-    marcadas."""
+    """Líneas de influencia de $R_A$ y $R_B$, con las ordenadas de cada
+    carga marcadas."""
     n_pts = 400
     xs = [L * i / n_pts for i in range(n_pts + 1)]
     ra_ys = [il_ra(x, L) for x in xs]
@@ -339,7 +339,7 @@ def plot_influence_lines_reactions(L, loads, result):
     def style_axis(ax, title, ylabel):
         ax.axhline(0, color="black", linewidth=0.8)
         ax.set_title(title)
-        ax.set_xlabel("x (posicion de la carga unitaria desde A) [m]")
+        ax.set_xlabel("x (posición de la carga unitaria desde A) [m]")
         ax.set_ylabel(ylabel)
         ax.grid(True, linestyle="--", alpha=0.5)
 
@@ -366,7 +366,7 @@ def plot_influence_lines_reactions(L, loads, result):
 def draw_load_train_diagram(train):
     """Esquema del tren de carga aislado (sin viga): cada carga como flecha
     con su magnitud, y las distancias entre cargas consecutivas dibujadas
-    como cotas (linea con flechas <-> y texto), al estilo de un plano."""
+    como cotas (línea con flechas <-> y texto), al estilo de un plano."""
 
     s_values = [s for s, _ in train]
     P_values = [P for _, P in train]
@@ -424,9 +424,9 @@ def draw_load_train_diagram(train):
 
 
 def draw_train_resultant_diagram(train, R, x_e):
-    """Esquema del tren de carga con su resultante R marcada en la posicion
+    """Esquema del tren de carga con su resultante R marcada en la posición
     xe, y la distancia xe dibujada como cota desde el origen del tren
-    (la carga mas a la izquierda, s = 0)."""
+    (la carga más a la izquierda, s = 0)."""
 
     s_values = [s for s, _ in train]
     P_values = [P for _, P in train]
@@ -485,15 +485,15 @@ def draw_train_resultant_diagram(train, R, x_e):
 
 
 def draw_beam_diagram(L, loads, a=None, excluded=None, title=None):
-    """Esquema de la viga simplemente apoyada: apoyo fijo en A, apoyo movil
+    """Esquema de la viga simplemente apoyada: apoyo fijo en A, apoyo móvil
     en B, cargas puntuales (flechas hacia abajo, magnitud en toneladas).
 
-    a: si se indica, dibuja la seccion de analisis 1-1 en x = a.
+    a: si se indica, dibuja la sección de análisis 1-1 en x = a.
     excluded: cargas del tren que quedaron fuera de la viga (se listan en el
-    titulo/nota, no se dibujan sobre la viga).
+    título/nota, no se dibujan sobre la viga).
     """
 
-    s = max(L * 0.035, 1e-6)  # unidad base para el tamano de los simbolos
+    s = max(L * 0.035, 1e-6)  # unidad base para el tamaño de los símbolos
 
     fig, ax = plt.subplots(figsize=(10, 3.8))
 
@@ -501,7 +501,7 @@ def draw_beam_diagram(L, loads, a=None, excluded=None, title=None):
     ax.plot([0, L], [beam_y, beam_y], color="black", linewidth=5,
              solid_capstyle="butt", zorder=3)
 
-    # --- Apoyo A: articulacion fija (triangulo + rayado de tierra) ---
+    # --- Apoyo A: articulación fija (triángulo + rayado de tierra) ---
     tri_a = Polygon(
         [(0, 0), (-s, -1.6 * s), (s, -1.6 * s)],
         closed=True, facecolor="dimgray", edgecolor="black", zorder=2,
@@ -512,7 +512,7 @@ def draw_beam_diagram(L, loads, a=None, excluded=None, title=None):
         xh = i * 0.7 * s
         ax.plot([xh, xh - 0.5 * s], [-1.6 * s, -2.2 * s], color="black", linewidth=0.8)
 
-    # --- Apoyo B: apoyo movil (triangulo + rodillos + rayado de tierra) ---
+    # --- Apoyo B: apoyo móvil (triángulo + rodillos + rayado de tierra) ---
     tri_b = Polygon(
         [(L, 0), (L - s, -1.6 * s), (L + s, -1.6 * s)],
         closed=True, facecolor="dimgray", edgecolor="black", zorder=2,
@@ -547,11 +547,11 @@ def draw_beam_diagram(L, loads, a=None, excluded=None, title=None):
                 fontsize=8, color="black", rotation=0)
         ax.plot([x, x], [0, -0.5 * s], color="gray", linewidth=0.8, linestyle=":")
 
-    # --- Seccion de analisis 1-1 en x = a (opcional) ---
+    # --- Sección de análisis 1-1 en x = a (opcional) ---
     top_label_y = arrow_top
     if a is not None:
         ax.axvline(a, color="royalblue", linestyle="--", linewidth=1.3, zorder=1)
-        ax.text(a, arrow_top + 1.2 * s, f"seccion 1-1\na={a:.2f} m", ha="center",
+        ax.text(a, arrow_top + 1.2 * s, f"sección 1-1\na={a:.2f} m", ha="center",
                 va="bottom", fontsize=9, color="royalblue")
         top_label_y = arrow_top + 1.2 * s
 
@@ -590,7 +590,7 @@ def get_float(prompt, min_val=None, max_val=None):
         try:
             val = float(input(prompt))
         except ValueError:
-            print("  -> Ingresa un numero valido.")
+            print("  -> Ingresa un número válido.")
             continue
         if min_val is not None and val < min_val:
             print(f"  -> El valor debe ser >= {min_val}.")
@@ -606,7 +606,7 @@ def get_int(prompt, min_val=None):
         try:
             val = int(input(prompt))
         except ValueError:
-            print("  -> Ingresa un entero valido.")
+            print("  -> Ingresa un entero válido.")
             continue
         if min_val is not None and val < min_val:
             print(f"  -> El valor debe ser >= {min_val}.")
@@ -621,7 +621,7 @@ def get_beam_length():
 
 def get_load_train():
     print("\n=== 2. Definir tren de carga (de izquierda a derecha) ===")
-    n = get_int("Numero de cargas del tren: ", min_val=1)
+    n = get_int("Número de cargas del tren: ", min_val=1)
     magnitudes = []
     distances = []
     for i in range(1, n + 1):
@@ -652,12 +652,12 @@ def main():
     print(f"c2 (con carga derecha  en x={s_right:.2f} m) = {c2:.4f} m")
 
     print("\n=== 5. Posicionar el tren sobre la viga y calcular momento ===")
-    a = get_float(f"Posicion de la seccion de analisis a [m] (0 <= a <= {L}): ",
+    a = get_float(f"Posición de la sección de análisis a [m] (0 <= a <= {L}): ",
                   min_val=0.0, max_val=L)
     print("Elige la alternativa de posicionamiento:")
-    print("  1) c1 (con la carga mas cercana a la izquierda de la resultante)")
-    print("  2) c2 (con la carga mas cercana a la derecha de la resultante)")
-    opcion = get_int("Opcion [1/2]: ", min_val=1)
+    print("  1) c1 (con la carga más cercana a la izquierda de la resultante)")
+    print("  2) c2 (con la carga más cercana a la derecha de la resultante)")
+    opcion = get_int("Opción [1/2]: ", min_val=1)
     c_elegido = c1 if opcion == 1 else c2
 
     incluidas, excluidas, origen_beam = position_train_on_beam(train, c_elegido, L)
@@ -675,7 +675,7 @@ def main():
 
     print("\n=== 6. Reacciones en A y B ===")
     x_derecho = get_float(
-        f"Posicion del extremo derecho del tren sobre la viga [m] (0 <= x <= {L}): ",
+        f"Posición del extremo derecho del tren sobre la viga [m] (0 <= x <= {L}): ",
         min_val=0.0, max_val=L,
     )
     inc_r, exc_r, origen_r = position_train_by_right_end(train, x_derecho, L)
@@ -689,15 +689,15 @@ def main():
     print(f"\nRA = {reacciones['RA']:.4f} ton")
     print(f"RB = {reacciones['RB']:.4f} ton")
 
-    draw_beam_diagram(L, inc_r, excluded=exc_r, title="Tren de carga para calculo de reacciones")
+    draw_beam_diagram(L, inc_r, excluded=exc_r, title="Tren de carga para cálculo de reacciones")
     plot_influence_lines_reactions(L, inc_r, reacciones)
 
-    print("\n=== 7. Cortante en la seccion de analisis ===")
+    print("\n=== 7. Cortante en la sección de análisis ===")
     x_derecho_v = get_float(
-        f"Posicion del extremo derecho del tren sobre la viga [m] (0 <= x <= {L}): ",
+        f"Posición del extremo derecho del tren sobre la viga [m] (0 <= x <= {L}): ",
         min_val=0.0, max_val=L,
     )
-    a_v = get_float(f"Posicion de la seccion de analisis a [m] (0 <= a <= {L}): ",
+    a_v = get_float(f"Posición de la sección de análisis a [m] (0 <= a <= {L}): ",
                      min_val=0.0, max_val=L)
     inc_v, exc_v, origen_v = position_train_by_right_end(train, x_derecho_v, L)
     corte = compute_shear(L, a_v, inc_v)
@@ -714,7 +714,7 @@ def main():
         print(f"V en x=a={a_v:.2f} m (lado der., x -> a+) = {corte['V_der']:.4f} ton")
 
     draw_beam_diagram(L, inc_v, a=a_v, excluded=exc_v,
-                       title="Tren de carga para calculo de cortante")
+                       title="Tren de carga para cálculo de cortante")
     plot_influence_line_v(L, a_v, inc_v, corte)
     plt.show()
 
