@@ -18,8 +18,8 @@ Sistema de unidades: MKS práctico (longitudes en metros, cargas en toneladas, m
 ## Instalación y uso
 
 ```bash
-git clone https://github.com/RACALLEO/Influence_Lines_Bridges.git
-cd Influence_Lines_Bridges
+git clone https://github.com/RACALLEO/Lineas_Influencia_Puentes.git
+cd Lineas_Influencia_Puentes
 pip install -r requirements.txt
 streamlit run app_lineas_influencia.py
 ```
