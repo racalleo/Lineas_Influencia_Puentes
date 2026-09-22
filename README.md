@@ -18,7 +18,7 @@ Sistema de unidades: MKS práctico (longitudes en metros, cargas en toneladas, m
 ## Instalación y uso
 
 ```bash
-git clone <url-de-este-repositorio>
+git clone https://github.com/RACALLEO/Influence_Lines_Bridges.git
 cd Influence_Lines_Bridges
 pip install -r requirements.txt
 streamlit run streamlit_app.py
